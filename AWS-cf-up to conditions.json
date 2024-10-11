@@ -1,0 +1,369 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Tenable AWS account template",
+  "Parameters": {
+    
+    "RoleExternalId": {
+      "AllowedPattern": ".+",
+      "Type": "String"
+    },
+    
+    "RoleMonitoringPolicy": {
+      "AllowedValues": [
+        true,
+        false
+      ],
+      "Default": true,
+      "Type": "Boolean"
+    },
+    "RoleName": {
+      "Default": "TenableRole",
+      "Type": "String"
+    },
+    
+    "RoleTrustedPrincipalId": {
+      "Type": "String"
+    },
+    "RoleVirtualMachineScanningPolicy": {
+      "AllowedValues": [
+        true,
+        false
+      ],
+      "Default": true,
+      "Type": "Boolean"
+    }
+  },
+  "Conditions": {
+    "RoleMonitoringPolicyEnabled": {
+      "Fn::Equals": [
+        true,
+        {
+          "Ref": "RoleMonitoringPolicy"
+        }
+      ]
+    },
+
+    "RoleVirtualMachineScanningPolicyEnabled": {
+      "Fn::Equals": [
+        true,
+        {
+          "Ref": "RoleVirtualMachineScanningPolicy"
+        }
+      ]
+    }
+  },
+  "Resources": {
+    "TenableRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Ref": "RoleTrustedPrincipalId"
+                }
+              },
+              "Action": "sts:AssumeRole",
+              "Condition": {
+                "StringEquals": {
+                  "sts:ExternalId": {
+                    "Ref": "RoleExternalId"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "Policies": [
+          {
+            "Fn::If": [
+              "RoleMonitoringPolicyEnabled",
+              {
+                "PolicyName": "Read-onlyPolicy",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "acm:Describe*",
+                        "acm:List*",
+                        "aoss:BatchGet*",
+                        "aoss:List*",
+                        "autoscaling:Describe*",
+                        "batch:Describe*",
+                        "batch:List*",
+                        "bedrock:Get*",
+                        "bedrock:List*",
+                        "cloudformation:Describe*",
+                        "cloudformation:Get*",
+                        "cloudformation:List*",
+                        "cloudfront:Get*",
+                        "cloudfront:ListDistributions*",
+                        "cloudtrail:Describe*",
+                        "cloudtrail:Get*",
+                        "cloudtrail:List*",
+                        "cloudtrail:LookupEvents",
+                        "cloudwatch:Describe*",
+                        "cloudwatch:GetMetric*",
+                        "cloudwatch:ListMetrics",
+                        "cognito-idp:ListResourcesForWebACL",
+                        "cognito-sync:GetCognitoEvents",
+                        "config:Describe*",
+                        "dynamodb:Describe*",
+                        "dynamodb:List*",
+                        "ec2:Describe*",
+                        "ecr:Describe*",
+                        "ecr:GetRegistryScanningConfiguration",
+                        "ecr:GetRepositoryPolicy",
+                        "ecr:List*",
+                        "ecr:StartImageScan",
+                        "ecr-public:Describe*",
+                        "ecr-public:GetRepositoryPolicy",
+                        "ecr-public:List*",
+                        "ecs:Describe*",
+                        "ecs:List*",
+                        "eks:Describe*",
+                        "eks:List*",
+                        "elasticache:Describe*",
+                        "elasticache:List*",
+                        "elasticbeanstalk:Describe*",
+                        "elasticbeanstalk:List*",
+                        "elasticfilesystem:Describe*",
+                        "elasticloadbalancing:Describe*",
+                        "elasticmapreduce:Describe*",
+                        "elasticmapreduce:List*",
+                        "es:Describe*",
+                        "es:List*",
+                        "events:ListRules",
+                        "iam:Generate*",
+                        "iam:Get*",
+                        "iam:List*",
+                        "identitystore:Describe*",
+                        "inspector2:List*",
+                        "iot:GetTopicRule",
+                        "kms:Describe*",
+                        "kms:GetKey*",
+                        "kms:List*",
+                        "kinesis:Describe*",
+                        "kinesis:List*",
+                        "lambda:Get*Policy",
+                        "lambda:GetAccountSettings",
+                        "lambda:List*",
+                        "logs:Describe*",
+                        "organizations:Describe*",
+                        "organizations:List*",
+                        "rds:Describe*",
+                        "rds:List*",
+                        "redshift:Describe*",
+                        "redshift:List*",
+                        "redshift-serverless:List*",
+                        "redshift-serverless:Get*",
+                        "route53:Get*",
+                        "route53:List*",
+                        "route53domains:Get*",
+                        "route53domains:List*",
+                        "route53resolver:Get*",
+                        "route53resolver:List*",
+                        "s3:Describe*",
+                        "s3:GetAccessPoint*",
+                        "s3:GetAccountPublicAccessBlock",
+                        "s3:GetBucket*",
+                        "s3:GetEncryptionConfiguration",
+                        "s3:GetJobTagging",
+                        "s3:GetLifecycleConfiguration",
+                        "s3:ListAccessPoints",
+                        "s3:ListAllMyBuckets",
+                        "s3:ListBucketVersions",
+                        "s3:ListJobs",
+                        "sagemaker:Describe*",
+                        "sagemaker:List*",
+                        "secretsmanager:Describe*",
+                        "secretsmanager:GetResourcePolicy",
+                        "secretsmanager:List*",
+                        "sns:Get*",
+                        "sns:List*",
+                        "sqs:Get*",
+                        "sqs:List*",
+                        "ssm:Describe*",
+                        "ssm:List*",
+                        "sso:Describe*",
+                        "sso:Get*",
+                        "sso:List*",
+                        "sso-directory:List*",
+                        "sso-directory:Search*",
+                        "sts:DecodeAuthorizationMessage",
+                        "tag:Get*",
+                        "timestream:List*",
+                        "timestream:Get*",
+                        "timestream:Describe*",
+                        "wafv2:Get*",
+                        "wafv2:List*"
+                      ],
+                      "Resource": "*"
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "s3:GetObject",
+                        "s3:ListBucket"
+                      ],
+                      "Resource": {
+                        "Fn::Sub": "arn:${AWS::Partition}:s3:::elasticbeanstalk-*"
+                      }
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": "apigateway:Get*",
+                      "NotResource": {
+                        "Fn::Sub": "arn:${AWS::Partition}:apigateway:*::/apikeys*"
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          },
+          {
+            "Fn::If": [
+              "RoleVirtualMachineScanningPolicyEnabled",
+              {
+                "PolicyName": "Ec2ScanningPolicy",
+                "PolicyDocument": {
+                  "Version": "2012-10-17",
+                  "Statement": [
+                    {
+                      "Effect": "Allow",
+                      "Action": "ec2:CreateSnapshot",
+                      "Resource": {
+                        "Fn::Sub": "arn:${AWS::Partition}:ec2:*:*:volume/*"
+                      }
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": "kms:CreateAlias",
+                      "Resource": {
+                        "Fn::Sub": "arn:${AWS::Partition}:kms:*:*:alias/*"
+                      }
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "ec2:CopySnapshot",
+                        "ec2:CreateSnapshot",
+                        "ec2:CreateTags",
+                        "kms:CreateKey",
+                        "kms:TagResource"
+                      ],
+                      "Resource": "*",
+                      "Condition": {
+                        "StringEquals": {
+                          "aws:RequestTag/ErmeticContext": "WorkloadAnalysis"
+                        }
+                      }
+                    },
+                    {
+                      "Effect": "Deny",
+                      "Action": "kms:TagResource",
+                      "Resource": "*",
+                      "Condition": {
+                        "Null": {
+                          "aws:ResourceTag/ErmeticContext": "true"
+                        }
+                      }
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "ec2:CopySnapshot",
+                        "ec2:DeleteSnapshot",
+                        "ec2:ModifySnapshotAttribute",
+                        "kms:CreateAlias",
+                        "kms:CreateGrant",
+                        "kms:Decrypt",
+                        "kms:EnableKeyRotation",
+                        "kms:GenerateDataKeyWithoutPlaintext",
+                        "kms:ReEncryptFrom",
+                        "kms:ReEncryptTo",
+                        "kms:RevokeGrant",
+                        "kms:ScheduleKeyDeletion"
+                      ],
+                      "Resource": "*",
+                      "Condition": {
+                        "StringEquals": {
+                          "aws:ResourceTag/ErmeticContext": "WorkloadAnalysis"
+                        }
+                      }
+                    },
+                    {
+                      "Effect": "Allow",
+                      "Action": [
+                        "kms:CreateGrant",
+                        "kms:Decrypt",
+                        "kms:ReEncryptFrom"
+                      ],
+                      "Resource": "*",
+                      "Condition": {
+                        "StringLike": {
+                          "kms:ViaService": "ec2.*.amazonaws.com"
+                        }
+                      }
+                    }
+                  ]
+                }
+              },
+              {
+                "Ref": "AWS::NoValue"
+              }
+            ]
+          }
+                     
+        ],
+        "RoleName": {
+          "Ref": "RoleName"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "TenableRoleArn": {
+      "Value": {
+        "Fn::GetAtt": [
+          "TenableRole",
+          "Arn"
+        ]
+      }
+    }
+  },
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Create IAM Role"
+          },
+          "Parameters": [
+            "RoleName",
+            "RoleExternalId",
+            "RoleTrustedPrincipalId"
+          ]
+        },
+        {
+          "Label": {
+            "default": "Tenable Polices"
+          },
+          "Parameters": [
+            
+            "RoleMonitoringPolicy",
+            "RoleVirtualMachineScanningPolicy"
+          ]
+        }
+      ]
+    }
+  }
+}
