@@ -1,0 +1,192 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Parameters": {
+        "ExternalAWSAccountId": {
+            "Type": "String",
+            "Description": "The AWS Account ID of the external account"
+        },
+        "ExternalId": {
+            "Type": "String",
+            "Description": "The external ID for assuming the role"
+        }
+    },
+    "Resources": {
+        "MyIAMRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "MyRole",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${ExternalAWSAccountId}:root"
+                                }
+                            },
+                            "Action": "sts:AssumeRole",
+                            "Condition": {
+                                "StringEquals": {
+                                    "sts:ExternalId": {
+                                        "Ref": "ExternalId"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        },
+        "MyIAMPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "MyPolicy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:ListBucket",
+                                "s3:GetObject"
+                            ],
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "MyIAMRole",
+                                    "Arn"
+                                ]
+                            }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ec2:DescribeInstances"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "ec2:CreateSnapshot",
+                            "Resource": "arn:aws:ec2:*:*:volume/*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "kms:CreateAlias",
+                            "Resource": "arn:aws:kms:*:*:alias/*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ec2:CopySnapshot",
+                                "ec2:CreateSnapshot",
+                                "ec2:CreateTags",
+                                "kms:CreateKey",
+                                "kms:TagResource"
+                            ],
+                            "Resource": "*",
+                            "Condition": {
+                                "StringEquals": {
+                                    "aws:RequestTag/ErmeticContext": "WorkloadAnalysis"
+                                }
+                            }
+                        },
+                        {
+                            "Effect": "Deny",
+                            "Action": "kms:TagResource",
+                            "Resource": "*",
+                            "Condition": {
+                                "Null": {
+                                    "aws:ResourceTag/ErmeticContext": "true"
+                                }
+                            }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ec2:CopySnapshot",
+                                "ec2:DeleteSnapshot",
+                                "ec2:ModifySnapshotAttribute",
+                                "kms:CreateAlias",
+                                "kms:CreateGrant",
+                                "kms:Decrypt",
+                                "kms:EnableKeyRotation",
+                                "kms:GenerateDataKeyWithoutPlaintext",
+                                "kms:ReEncryptFrom",
+                                "kms:ReEncryptTo",
+                                "kms:RevokeGrant",
+                                "kms:ScheduleKeyDeletion"
+                            ],
+                            "Resource": "*",
+                            "Condition": {
+                                "StringEquals": {
+                                    "aws:ResourceTag/ErmeticContext": "WorkloadAnalysis"
+                                }
+                            }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "kms:CreateGrant",
+                                "kms:Decrypt",
+                                "kms:ReEncryptFrom"
+                            ],
+                            "Resource": "*",
+                            "Condition": {
+                                "StringLike": {
+                                    "kms:ViaService": "ec2.*.amazonaws.com"
+                                }
+                            }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": "ec2:RunInstances",
+                            "Resource": "*",
+                            "Condition": {
+                                "StringEquals": {
+                                    "aws:RequestTag/ErmeticContext": "WorkloadAnalysis"
+                                }
+                            }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ec2:DeleteVolume",
+                                "ec2:TerminateInstances"
+                            ],
+                            "Resource": "*",
+                            "Condition": {
+                                "StringEquals": {
+                                    "aws:ResourceTag/ErmeticContext": "WorkloadAnalysis"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "MyIAMRole"
+                    }
+                ]
+            },
+            "DependsOn": "MyIAMRole"
+        }
+    },
+    "Outputs": {
+        "RoleARN": {
+            "Description": "ARN of the IAM Role",
+            "Value": {
+                "Fn::GetAtt": [
+                    "MyIAMRole",
+                    "Arn"
+                ]
+            }
+        },
+        "PolicyARN": {
+            "Description": "ARN of the IAM Policy",
+            "Value": {
+                "Ref": "MyIAMPolicy"
+            }
+        }
+    }
+}
