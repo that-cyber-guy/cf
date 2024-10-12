@@ -51,8 +51,14 @@
                                 "s3:ListBucket",
                                 "s3:GetObject"
                             ],
-                            "Resource": "*"
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "MyIAMRole",
+                                    "Arn"
+                                ]
+                            }
                         },
+    
                         {
                             "Effect": "Allow",
                             "Action": [
