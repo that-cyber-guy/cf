@@ -37,37 +37,44 @@
             ]
           }
         }
-      },
-      "MyIAMPolicy": {
-        "Type": "AWS::IAM::Policy",
-        "Properties": {
-          "PolicyName": "MyPolicy",
-          "PolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Action": [
-                  "s3:ListBucket",
-                  "s3:GetObject"
-                ],
-                "Resource": {
-                  "Fn::GetAtt": [
-                    "MyIAMRole",
-                    "Arn"
-                  ]
-                }
-              }
+    },
+    "MyIAMPolicy": {
+      "Type": "AWS::IAM::Policy",
+      "Properties": {
+        "PolicyName": "MyPolicy",
+        "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Action": [
+            "s3:ListBucket",
+            "s3:GetObject"
+            ],
+            "Resource": {
+            "Fn::GetAtt": [
+              "MyIAMRole",
+              "Arn"
             ]
-          },
-          "Roles": [
-            {
-              "Ref": "MyIAMRole"
             }
-          ]
+          },
+          {
+            "Effect": "Allow",
+            "Action": [
+            "ec2:DescribeInstances"
+            ],
+            "Resource": "*"
+          }
+        ]
         },
-        "DependsOn": "MyIAMRole"
-      }
+        "Roles": [
+        {
+          "Ref": "MyIAMRole"
+        }
+        ]
+      },
+      "DependsOn": "MyIAMRole"
+    }
     },
     "Outputs": {
       "RoleARN": {
