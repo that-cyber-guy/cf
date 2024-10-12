@@ -1,96 +1,91 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
     "Parameters": {
-      "ExternalAWSAccountId": {
-        "Type": "String",
-        "Description": "The AWS Account ID of the external account"
-      },
-      "ExternalId": {
-        "Type": "String",
-        "Description": "The external ID for assuming the role"
-      }
+        "ExternalAWSAccountId": {
+            "Type": "String",
+            "Description": "The AWS Account ID of the external account"
+        },
+        "ExternalId": {
+            "Type": "String",
+            "Description": "The external ID for assuming the role"
+        }
     },
     "Resources": {
-      "MyIAMRole": {
-        "Type": "AWS::IAM::Role",
-        "Properties": {
-          "RoleName": "MyRole",
-          "AssumeRolePolicyDocument": {
-            "Version": "2012-10-17",
-            "Statement": [
-              {
-                "Effect": "Allow",
-                "Principal": {
-                  "AWS": {
-                    "Fn::Sub": "arn:aws:iam::${ExternalAWSAccountId}:root"
-                  }
-                },
-                "Action": "sts:AssumeRole",
-                "Condition": {
-                  "StringEquals": {
-                    "sts:ExternalId": {
-                      "Ref": "ExternalId"
-                    }
-                  }
+        "MyIAMRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": "MyRole",
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Fn::Sub": "arn:aws:iam::${ExternalAWSAccountId}:root"
+                                }
+                            },
+                            "Action": "sts:AssumeRole",
+                            "Condition": {
+                                "StringEquals": {
+                                    "sts:ExternalId": {
+                                        "Ref": "ExternalId"
+                                    }
+                                }
+                            }
+                        }
+                    ]
                 }
-              }
-            ]
-          }
-        }
-    },
-    "MyIAMPolicy": {
-      "Type": "AWS::IAM::Policy",
-      "Properties": {
-        "PolicyName": "MyPolicy",
-        "PolicyDocument": {
-        "Version": "2012-10-17",
-        "Statement": [
-          {
-            "Effect": "Allow",
-            "Action": [
-            "s3:ListBucket",
-            "s3:GetObject"
-            ],
-            "Resource": {
-            "Fn::GetAtt": [
-              "MyIAMRole",
-              "Arn"
-            ]
             }
-          },
-          {
-            "Effect": "Allow",
-            "Action": [
-            "ec2:DescribeInstances"
-            ],
-            "Resource": "*"
-          }
-        ]
         },
-        "Roles": [
-        {
-          "Ref": "MyIAMRole"
+        "MyIAMPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": "MyPolicy",
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:ListBucket",
+                                "s3:GetObject"
+                            ],
+                            "Resource": "*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "ec2:DescribeInstances"
+                            ],
+                            "Resource": "*"
+                        }
+                    ]
+                },
+                "Roles": [
+                    {
+                        "Ref": "MyIAMRole"
+                    }
+                ]
+            },
+            "DependsOn": "MyIAMRole"
         }
-        ]
-      },
-      "DependsOn": "MyIAMRole"
-    }
     },
     "Outputs": {
-      "RoleARN": {
-        "Description": "ARN of the IAM Role",
-        "Value": {
-          "Fn::GetAtt": [
-            "MyIAMRole",
-            "Arn"
-          ]
+        "RoleARN": {
+            "Description": "ARN of the IAM Role",
+            "Value": {
+                "Fn::GetAtt": [
+                    "MyIAMRole",
+                    "Arn"
+                ]
+            }
+        },
+        "PolicyARN": {
+            "Description": "ARN of the IAM Policy",
+            "Value": {
+                "Ref": "MyIAMPolicy"
+            }
         }
-      },
-      "PolicyARN": {
-        "Description": "ARN of the IAM Policy",
-        "Value": {
-          "Ref": "MyIAMPolicy"
-        }
-      }
     }
-  }
+}
